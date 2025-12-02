@@ -1,16 +1,19 @@
-# Uses Streamlit and pyAgrum; installs graphviz for visualization
 FROM python:3.11-slim
 
+# Install graphviz for pyAgrum visualizations
 RUN apt-get update && apt-get install -y graphviz && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy requirements first to leverage Docker layer caching
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy your app code (adjust paths if your app is nested)
-COPY . /app
+# Copy entire project
+COPY . .
+
+# Add current directory to Python path so bn_decision_maker can be imported
+ENV PYTHONPATH=/app
 
 EXPOSE 8501
 ENV PYTHONUNBUFFERED=1
