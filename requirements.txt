@@ -5,3 +5,4 @@ python-dotenv>=1.0.0
 litellm>=1.40.0
 openai>=1.0.0
 graphviz>=0.20.1
+plotly>=5.18.0
