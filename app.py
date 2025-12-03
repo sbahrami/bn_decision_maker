@@ -134,8 +134,15 @@ def parse_and_build_bn(case_text: str, system_prompt: str):
     Parse case with LLM and build Bayesian Network.
     Cached to avoid repeated API calls for the same case.
     """
+    import traceback
     parser = CaseParser()
-    parsed_data = parser.parse_case(case_text, system_prompt)
+    try:
+        parsed_data = parser.parse_case(case_text, system_prompt)
+    except Exception as e:
+        st.error(f"Error parsing case: {e}")
+        if st.button("Show parsing error details"):
+            st.code(traceback.format_exc())
+        return None, None
     try:
         bn = DecisionBN(parsed_data['bn-data'])
     except ValueError as e:
