@@ -136,7 +136,14 @@ def parse_and_build_bn(case_text: str, system_prompt: str):
     """
     parser = CaseParser()
     parsed_data = parser.parse_case(case_text, system_prompt)
-    bn = DecisionBN(parsed_data['bn-data'])
+    try:
+        bn = DecisionBN(parsed_data['bn-data'])
+    except ValueError as e:
+        st.error(f"Issue with building Bayesian Network: {e}")
+        if st.button("Show error details"):
+            import traceback
+            st.code(traceback.format_exc())
+        return None, parsed_data
     return bn, parsed_data
 
 
@@ -193,38 +200,25 @@ else:
 _, col_center, _ = st.columns([1, 1, 1])
 with col_center:
     # Analysis button
-    analyze_button = st.button("Analyze Case", type="primary", use_container_width=True)
+    analyze_button = st.button("Analyze Case", type="primary", width='stretch')
 
     if analyze_button:
         if not case_text or not case_text.strip():
             st.error("Please enter or select a case to analyze.")
         else:
-            try:
-                with st.spinner("Parsing case with LLM..."):
-                    # Parse and build (with caching)
-                    bn, parsed_data = parse_and_build_bn(case_text, SYSTEM_PROMPT)
-                    
-                    # Store in session state
-                    st.session_state.bn = bn
-                    st.session_state.parsed_data = parsed_data
-                    st.session_state.case_name = case_name
-                    
-                st.success("Case analyzed successfully! Please check the inferred network structure and CPTs on the right before moving forward.")
-                
-            except Exception as e:
-                st.error(f"Error analyzing case: {str(e)}")
-                
-                # Show detailed error information for debugging
-                with st.expander("Debug Information", expanded=True):
-                    st.code(str(e))
-                    import traceback
-                    st.code(traceback.format_exc())
-                    
-                    # If we have parsed data, show it
-                    if 'parsed_data' in locals():
-                        st.json(parsed_data)
-                
+            bn, parsed_data = parse_and_build_bn(case_text, SYSTEM_PROMPT)
+            if bn is None:
                 st.stop()
+            # Store in session state
+            st.session_state.bn = bn
+            st.session_state.parsed_data = parsed_data
+            st.session_state.case_name = case_name
+            
+            st.success("Case analyzed successfully! Please check the inferred network structure and CPTs on the right before moving forward.")
+            
+            # Debug: show parsed data
+            with st.expander("Parsed Data", expanded=False):
+                st.json(parsed_data)
 
 # Display results if BN is available
 if st.session_state.bn is not None:
@@ -257,7 +251,7 @@ if st.session_state.bn is not None:
                     value_label="Probability",
                     stacked=False
                 )
-                st.plotly_chart(fig, use_container_width=True, key=f"marginal_bar_{var}")
+                st.plotly_chart(fig, width='stretch', key=f"marginal_bar_{var}")
                 st.markdown("")
         
         # Query with Evidence
@@ -299,7 +293,7 @@ if st.session_state.bn is not None:
                         value_label="Probability",
                         stacked=False
                     )
-                    st.plotly_chart(fig, use_container_width=True, key=f"query_bar_{query_var}")
+                    st.plotly_chart(fig, width='stretch', key=f"query_bar_{query_var}")
 
         # Decision Analysis (for predefined cases with known utilities)
         if 'utilities' in st.session_state.parsed_data['bn-data']:
@@ -339,7 +333,7 @@ if st.session_state.bn is not None:
             # Get pyAgrum BN object and display it
             agrum_bn = bn.get_bn_graph()
             dot_string = agrum_bn.toDot()
-            st.graphviz_chart(dot_string, use_container_width=True)
+            st.graphviz_chart(dot_string, width='stretch')
             
             st.markdown("---")
             
