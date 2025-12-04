@@ -213,19 +213,23 @@ with col_center:
         if not case_text or not case_text.strip():
             st.error("Please enter or select a case to analyze.")
         else:
-            bn, parsed_data = parse_and_build_bn(case_text, SYSTEM_PROMPT)
-            if bn is None:
-                st.stop()
-            # Store in session state
-            st.session_state.bn = bn
-            st.session_state.parsed_data = parsed_data
-            st.session_state.case_name = case_name
-            
-            st.success("Case analyzed successfully! Please check the inferred network structure and CPTs on the right before moving forward.")
-            
-            # Debug: show parsed data
-            with st.expander("Parsed Data", expanded=False):
-                st.json(parsed_data)
+            try:
+                bn, parsed_data = parse_and_build_bn(case_text, SYSTEM_PROMPT)
+                if bn is None:
+                    st.stop()
+                # Store in session state
+                st.session_state.bn = bn
+                st.session_state.parsed_data = parsed_data
+                st.session_state.case_name = case_name
+                
+                st.success("Case analyzed successfully! Please check the inferred network structure and CPTs on the left side before moving forward.")
+                
+                # Debug: show parsed data
+                with st.expander("Parsed Data", expanded=False):
+                    st.json(parsed_data)
+            except Exception as e:
+                import traceback
+                st.info(f"Issue with parsing and building BN. Please revise your description. Details: {e}")
 
 # Display results if BN is available
 if st.session_state.bn is not None:
@@ -320,7 +324,7 @@ if st.session_state.bn is not None:
                         fig = create_utility_heatmap(
                             data=pd.DataFrame([eus]),
                             x_label="Expected Utility", y_label="Action", title="Expected Utilities")
-                        st.plotly_chart(fig, use_container_width=False, key="expected_utilities_heatmap")
+                        st.plotly_chart(fig, width='content', key="expected_utilities_heatmap")
 
                     except ValueError as e:
                         st.error(f"Cannot compute utilities: {str(e)}")
