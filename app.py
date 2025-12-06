@@ -1,6 +1,9 @@
 """
 Streamlit web application for Bayesian Network decision analysis.
 """
+import traceback
+import logging
+from datetime import datetime
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -134,23 +137,33 @@ def parse_and_build_bn(case_text: str, system_prompt: str):
     Parse case with LLM and build Bayesian Network.
     Uses models list from config, trying models[0] first and cascading through fallbacks.
     Cached to avoid repeated API calls for the same case.
-    """
-    import traceback
+    """    
+    # Setup error logging
+    log_dir = "logs"
+    import os
+    os.makedirs(log_dir, exist_ok=True)
+    
+    error_log_file = os.path.join(log_dir, f"parse_errors_{datetime.now().strftime('%Y%m%d')}.log")
+    logging.basicConfig(
+        filename=error_log_file,
+        level=logging.ERROR,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    
     parser = CaseParser(models=APP_CONFIG.get("models"))
     try:
         parsed_data = parser.parse_case(case_text, system_prompt)
     except Exception as e:
-        st.error(f"Error parsing case: {e}")
-        if st.button("Show parsing error details"):
-            st.code(traceback.format_exc())
+        # Log parsing error
+        logging.error(f"Parsing Error:\n{traceback.format_exc()}\n\nCase Text:\n{case_text[:500]}...")
+        st.error(traceback.format_exc())
         return None, None
     try:
         bn = DecisionBN(parsed_data['bn-data'])
-    except ValueError as e:
-        st.error(f"Issue with building Bayesian Network: {e}")
-        if st.button("Show error details"):
-            import traceback
-            st.code(traceback.format_exc())
+    except Exception as e:
+        # Log unexpected errors
+        logging.error(f"Unexpected Error in BN Building:\n{traceback.format_exc()}\n\nParsed Data:\n{parsed_data}")
+        st.error(f"Unexpected error: {e}")
         return None, parsed_data
     return bn, parsed_data
 

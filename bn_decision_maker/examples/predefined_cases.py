@@ -44,8 +44,8 @@ Device Risk is High (0.08) or Low (0.92). Transaction Velocity depends on both: 
 with low device risk, 22% if either factor is risky, 35% if both are risky. Payment Method is Secure (0.75) or 
 Risky (0.25), independent of other factors. Fraud likelihood is 0.8% when velocity is normal and payment is secure, 
 18% if either is bad, 42% if both are bad. The ML detector catches fraud with 92% accuracy and has 3% false positives. 
-The team decides to Block or Allow. If fraudulent and allowed: –250. If fraudulent and blocked: –5. 
-If legitimate and blocked: –15. If legitimate and allowed: +20.
+The team decides to Block or Allow. If fraudulent and allowed: –150. If fraudulent and blocked: +10. 
+If legitimate and blocked: –10. If legitimate and allowed: +5.
 """
 
 # Mapping for easy access

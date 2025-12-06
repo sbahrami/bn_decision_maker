@@ -83,14 +83,19 @@ Notes:
   and the values are dictionaries mapping child variable states to probabilities.
 - Do NOT emit arrays or single numbers for CPT rows; always emit a dict with every child state.
 
-CRITICAL: Do NOT include "Decision" as a variable in the "variables" list or in "cpts".
-The decision variable is automatically created from the "actions" in the "utilities" section.
-Only include chance variables (probabilistic variables) in the "variables" and "cpts" sections.
+CRITICAL INSTRUCTIONS FOR UTILITIES (DECISION PROBLEMS):
+1. Do NOT include "Decision" as a variable in the "variables" list or in "cpts".
+   The decision node is created automatically from the "actions" in the utilities section.
+2. The "outcome_var" in utilities MUST be a CHANCE VARIABLE from your variables list that represents
+   the outcome affected by the decision (e.g., "Overheat", "FraudLikelihood").
+   Do NOT use "Decision" or action names as the outcome_var.
+3. The "actions" keys (e.g., "Continue", "Block") define the decision options automatically.
+4. Each action maps to utilities for each state of the outcome_var (e.g., {"high": -200, "normal": 100}).
 """
 
 # App configuration
 APP_CONFIG = {
-    "title": "Decision Analysis by Bayesian Networks",
+    "title": "Decision Making Assitant",
     "models": [
         {
             "model_name": "gpt-4o-mini",
