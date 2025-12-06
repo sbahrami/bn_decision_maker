@@ -82,13 +82,34 @@ Notes:
 - In the table format, the keys are comma-separated parent state combinations (in order of parents list),
   and the values are dictionaries mapping child variable states to probabilities.
 - Do NOT emit arrays or single numbers for CPT rows; always emit a dict with every child state.
-- You're no allowed to use any of the given json tags as variable names. e.g. Decision.
+
+CRITICAL: Do NOT include "Decision" as a variable in the "variables" list or in "cpts".
+The decision variable is automatically created from the "actions" in the "utilities" section.
+Only include chance variables (probabilistic variables) in the "variables" and "cpts" sections.
 """
 
 # App configuration
 APP_CONFIG = {
     "title": "Decision Analysis by Bayesian Networks",
-    "default_model": "gpt-4o-mini",
+    "models": [
+        {
+            "model_name": "gpt-4o-mini",
+            "litellm_params":{
+                "custom_llm_provider": "openai",
+                "api_base": "https://api.openai.com/v1",
+                "env_key": "OPENAI_API_KEY"
+            }
+        },
+        {
+            "model_name": "groq-llama3",
+                "litellm_params": {
+                    "model": "groq/llama-3.3-70b-versatile",
+                    "custom_llm_provider": "groq",
+                    "api_base": "https://api.groq.com/openai/v1",
+                    "env_key": "GROQ_API_KEY"
+                }
+        }
+    ],
     "page_icon": "🤖",
     "layout": "wide"
 }

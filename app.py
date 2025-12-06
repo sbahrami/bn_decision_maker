@@ -132,10 +132,11 @@ def create_horizontal_bar(labels, values, value_format='.4f', value_label='Proba
 def parse_and_build_bn(case_text: str, system_prompt: str):
     """
     Parse case with LLM and build Bayesian Network.
+    Uses models list from config, trying models[0] first and cascading through fallbacks.
     Cached to avoid repeated API calls for the same case.
     """
     import traceback
-    parser = CaseParser()
+    parser = CaseParser(models=APP_CONFIG.get("models"))
     try:
         parsed_data = parser.parse_case(case_text, system_prompt)
     except Exception as e:
@@ -168,9 +169,12 @@ if 'parsed_data' not in st.session_state:
     st.session_state.parsed_data = None
 if 'case_name' not in st.session_state:
     st.session_state.case_name = None
+if 'show_logs' not in st.session_state:
+    st.session_state.show_logs = False
 
 st.markdown(f"# {APP_CONFIG['title']}")
-st.markdown("*AI-powered decision analysis using Bayesian Networks*")
+st.markdown("*AI-powered decision analysis using Bayesian Networks (pyAgrum)")
+
 st.markdown("---")
 
 # Sidebar for case selection
